@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Game</title>
+<style>
+ 
+  body {
+  font-family: Arial, sans-serif;
+  padding: 0;
+  margin: 0;
+  background-image: url('image 2.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.3); 
+  z-index: -1;
+}
+
+#quiz-container {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 40px; 
+  width: 30%;
+  margin: 10vh auto;
+  color: #000;
+  box-shadow: 0 0 15px rgba(51, 90, 218, 0.3);
+}
+
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color:grey;
+  }
+
+  button:disabled {
+    cursor: allowed;
+  }
+  .answer-btn {
+    width: 50%;
+    text-align: left;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-Weight: "bold";
+  }
+  .nav-btns {
+    justify-content: space-between;
+    margin-top: 20px;
+    display:flex;
+    padding-right:60px;
+  }
+  #prev-btn, #next-btn {
+    
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color:rgba(227, 227, 236, 0.786);
+  }
+  #demo{
+    color:white;
+    text-align:center;
+    padding-top:60px;
+    font-size:40px;
+  }
+  #index{
+    color:white;
+    text-align:center;
+    font-size:30px;
+  }
+</style>
+</head>
+<body>
+ <p id="demo">QUIZ APP</p>
+ <p id="index">USING HTML, CSS, JAVASCRIPT</p>
+<div id="quiz-container">
+<h2>Questions:</h2>
+  <h3 id="question">Questions Here</h3> 
+  <ol type="a">
+    <li><button class="answer-btn">Answer 1</button></li>
+    <li><button class="answer-btn">Answer 2</button></li>
+    <li><button class="answer-btn">Answer 3</button></li>
+    <li><button class="answer-btn">Answer 4</button></li>
+  </ol>
+  <div class="nav-btns">
+    <button id="prev-btn">Previous</button>
+    <button id="next-btn">Next</button>
+  </div>
+  <div id="score"></div>
+</div>
+</div>
+
+<script>
+const question = [
+  {
+        Question: "1.what is the full form of HTML?",
+        a: "Hello to my land",
+        b: "Hey text markup language",  
+        c: "Hypertext markup language",
+        d: "Hypertext makeup language",
+        correct: "c",
+    },
+    {
+        Question: "2.What is the full form of CSS?",
+        a: "Cascading style sheets",
+        b: "Cascading style sheep",
+        c: "Cartoon style sheets",
+        d: "Cascading super sheets",
+        correct: "a",
+    },
+    {
+        Question: "3.What is the full form of HTTP?",
+        a: "Hypertext transfer product",
+        b: "Hypertext test protocol",
+        c: "Hey transfer protocol",
+        d: "Hypertext transfer protocol",
+        correct: "d",
+    },
+    {
+        Question: "4.What is the full form of JS?",
+        a: "Java super",
+        b: "JavaScript",
+        c: "JustScript",
+        d: "Java strong",
+        correct: "b",
+    },
+    {
+        Question: "5.which tag is used to insert a line break in HTML?",
+        a: "<br>",
+        b: "<a>",
+        c: "<b>",
+        d: "<break>",
+        correct: "a",
+    },
+    {
+        Question: "6.Which HTML tag is used to define an internal style sheet?",
+        a: "<css>",
+        b: "<script>",
+        c: "<style>",
+        d: "<styles>",
+        correct: "c",
+    },
+    {
+        Question: "7.Which variable cannot be reassigned and redeclared in javascript?",
+        a: "var",
+        b: "let",
+        c: "const",
+        d: "All of the above",
+        correct: "c",
+    },
+    {
+        Question: "8.which variable can be reassigned and redeclared in javascript?",
+        a: "var",
+        b: "let",
+        c: "const",
+        d: "All of the above",
+        correct: "a",
+    },
+    {
+        Question: "9.Which CSS selector is used to select an element with a specific id?",
+        a: ".id",
+        b: "#id",
+        c: "*id",
+        d: "id",
+        correct: "b",
+    },
+    {
+        Question: "10.which HTML attribute is used to define inline styles?",
+        a: "font",
+        b: "styles",
+        c: "class",
+        d: "style",
+        correct: "d",
+    }];
+
+const questionEl = document.getElementById("question");
+const answerBtns = document.querySelectorAll(".answer-btn");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const scoreEl = document.getElementById("score");
+const progressEl = document.createElement("div");
+document.getElementById("quiz-container").prepend(progressEl);
+
+let currentQuestion = 0;
+let userAnswers = new Array(question.length).fill(null);
+
+function loadQuestion(){
+  resetState();
+  updateProgress();
+
+  const q = question[currentQuestion];
+  questionEl.textContent = q.Question;
+  answerBtns[0].textContent = q.a;
+  answerBtns[1].textContent = q.b;
+  answerBtns[2].textContent = q.c;
+  answerBtns[3].textContent = q.d;
+
+  
+  answerBtns.forEach((btn,index)=>{
+    btn.onclick = () => selectAnswer(index);
+  });
+
+ 
+  const prevSelected = userAnswers[currentQuestion];
+  if(prevSelected !== null){
+    answerBtns[prevSelected].style.backgroundColor = "#d0e7ff"; // light blue
+    answerBtns[prevSelected].style.fontWeight = "bold";
+    nextBtn.style.display = currentQuestion < question.length - 1 ? "inline-block" : "none";
+  }
+
+  prevBtn.style.display = currentQuestion > 0 ? "inline-block" : "none";
+  if(prevSelected === null) nextBtn.style.display = "none";
+}
+
+function selectAnswer(index){
+  const options = ["a","b","c","d"];
+  const correct = question[currentQuestion].correct;
+  userAnswers[currentQuestion] = index;
+
+  
+  answerBtns.forEach(btn => {
+    btn.style.backgroundColor = "white";
+    btn.style.fontWeight = "normal";
+  });
+
+ 
+  if(options[index] === correct){
+    answerBtns[index].style.backgroundColor = "#ccffb3"; // green
+  } else {
+    answerBtns[index].style.backgroundColor = "#ff9999"; // red
+    answerBtns[options.indexOf(correct)].style.backgroundColor = "#e6ffe6";
+  }
+  answerBtns[index].style.fontWeight = "bold";
+
+  if(currentQuestion < question.length - 1){
+    nextBtn.style.display = "inline-block";
+  } else {
+    setTimeout(showScore, 1000);
+  }
+}
+
+function resetState(){
+  answerBtns.forEach(btn => {
+    btn.disabled = false;
+    btn.style.backgroundColor = "white";
+    btn.style.fontWeight = "normal";
+  });
+  nextBtn.style.display = "none";
+}
+
+nextBtn.addEventListener("click",()=>{
+  if(currentQuestion < question.length - 1){
+    currentQuestion++;
+    loadQuestion();
+  } else {
+    showScore();
+  }
+});
+
+prevBtn.addEventListener("click",()=>{
+  if(currentQuestion > 0){
+    currentQuestion--;
+    loadQuestion();
+  }
+});
+
+function updateProgress(){
+  progressEl.textContent = `Question ${currentQuestion + 1} / ${question.length}`;
+}
+
+function showScore(){
+  const options = ["a","b","c","d"];
+  let finalScore = 0;
+
+  for(let i = 0; i < userAnswers.length; i++){
+    const selected = userAnswers[i];
+    if(selected !== null){
+      const correct = question[i].correct;
+      if(options[selected] === correct){
+        finalScore++;
+      }
+    }
+  }
+
+  const quizContainer = document.getElementById("quiz-container");
+  quizContainer.innerHTML = `
+    <h2>Your Score: ${finalScore} / ${question.length}</h2>
+    <button onclick="location.reload()">Play Again</button>
+  `;
+}
+
+loadQuestion();
+
+
+</script>
+
+</body>
+</html>
